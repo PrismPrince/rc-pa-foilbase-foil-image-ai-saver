@@ -6,9 +6,9 @@
   var docName = '';
   var actvDoc = null;
   var foilLayer = null;
-  var position = [0, 0];
   var foilImages = null;
   var foilImagesCount = null;
+  var position = [0, 0];
   var progressbar = new ProgressBar('Foil Base - Foil Image AI Saver Script');
   var saveOptions = new IllustratorSaveOptions();
 
@@ -22,16 +22,13 @@
     alert('ERROR: Destination folder not defined.\n\nAborting process...');
 
     return;
-  } else outPath += '\\';
+  } else outPath = outPath.replace(/\\+$/, '') + '\\';
 
-  progressbar.reset('Processing Foil Base Magick...', app.documents.length * 4);
 
-  for (var a = 0; a < app.documents.length; a++, progressbar.hit()) {
+  for (var a = 0; a < app.documents.length; a++) {
     docName = app.documents[a].name;
 
     if (docName.match(/^MIN-[A-Z0-9]{3}-[A-Z0-9]{3}_[A-Z]_[1356]?_?FRT\.ai$/) === null) {
-      progressbar.close();
-
       alert('ERROR: Some file names are not in standard format.\n\nAborting...');
 
       return;
@@ -43,40 +40,26 @@
   try {
     foilLayer = !!actvDoc.layers['id:foil_artwork'] ? actvDoc.layers['id:foil_artwork'] : null;
   } catch (e) {
-    progressbar.close();
-
     alert('ERROR: "id:foil_artwork" layer is missing.\n\nAborting process...');
 
     return;
-  }
-
-  if (foilLayer.groupItems[0].rasterItems.length < 1) {
-    progressbar.close();
-
-    alert('ERROR: No foil images.\n\nAborting process...');
-
-    return;
-  } else if (foilLayer.groupItems[0].rasterItems.length < 3) {
-    progressbar.hide();
-
-    if (confirm('WARNING: Minimum of 3 foil images.\n\nDo you still want to continue?')) progressbar.show();
-    else {
-      progressbar.close();
-
-      return;
-    }
-
   }
 
   actvDoc.artboards[0].rulerOrigin = [0, 0];
   position = foilLayer.groupItems[0].position;
   foilImagesCount = foilLayer.groupItems[0].rasterItems.length;
 
-  if (!!actvDoc.selection.length) {
-    for (var b = actvDoc.selection.length - 1; b >= 0; b--) {
+  if (foilImagesCount < 1) {
+    alert('ERROR: No foil images.\n\nAborting process...');
+
+    return;
+  } else if (foilImagesCount < 3) if (!confirm('WARNING: Minimum of 3 foil images.\n\nDo you still want to continue?')) return;
+
+  progressbar.reset('Processing Foil Base Magick...', app.documents.length * foilImagesCount);
+
+  if (!!actvDoc.selection.length)
+    for (var b = actvDoc.selection.length - 1; b >= 0; b--)
       actvDoc.selection[b].selected = false;
-    }
-  }
 
   foilLayer.groupItems[0].selected = true;
 
@@ -198,8 +181,9 @@
   docName = '';
   actvDoc = null;
   foilLayer = null;
-  position = [0, 0];
   foilImages = null;
+  foilImagesCount = null;
+  position = [0, 0];
   progressbar = null;
 
   return;
